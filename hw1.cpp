@@ -13,6 +13,7 @@
 
 #define TEST_INSERT_ITER 10000000
 #define TESTED_TYPE float
+#define C 0.7
 
 
 /**
@@ -21,7 +22,7 @@
 template <typename V>
 class HashTableLL {
 
-	const size_t TABLE_SIZE = 400000;
+	const size_t TABLE_SIZE = TEST_INSERT_ITER * C;
 
 	struct HashNode {
 
@@ -115,60 +116,68 @@ public:
 		}
 	}
 
+	void printName () {
+		std::cout << name << ": ";
+	}
+
 };
 
 /**
  * hastable used probing and rehashing
  */
-template <typename T>
+template <typename T, int ALPHA>
 class HashTableLPR {
 
-	const size_t INIT_SIZE = 5;
+	const size_t INIT_SIZE = 100;
 
 
 public:
 
-	std::string name = "linear probing, rehashing";
+	std::string name = "linear probing, rehashing, alpha=";
 
-	T * table;
+	T ** table;
 	size_t size;
 	size_t free;
 
 	HashTableLPR() {
 
-		table = new T[INIT_SIZE];
+		T * tmpTable = new T[INIT_SIZE];
+		for (size_t i = 0; i < INIT_SIZE; ++i) {
+			tmpTable[i] = 0;
+		}
 		size = INIT_SIZE;
-		free = INIT_SIZE/2;
+		free = size_t(INIT_SIZE*ALPHA/100);
+		table = &tmpTable;
 
 	}
 
 	~HashTableLPR() {
-		delete[] table;
+		delete[] *table;
 	}
 
 	void insert ( const T & item ) {
 
-		size_t key = getHash(std::hash<T> {} (item));
+		if ( !find(item) ) {
 
-		while (table[key] != 0) {
-			if (table[key] == item)
-				++free;
-				break;
-			key = getHash(key + 1);
-		}
-		table[key] = item;
-		--free;
-		if (free == 0) {
-			rehash();
+			size_t key = getHash(std::hash<T> {} (item));
+
+			while ((*table)[key] != 0) {
+				key = getHash(key + 1);
+			}
+			(*table)[key] = item;
+			--free;
+			if (free == 0) {
+				rehash();
+			}
 		}
 
 	}
 
 	bool find (const T & item) {
-		size_t key = getHash(item);
+		size_t key = getHash(std::hash<T> {} (item));
 
-		while (table[key] != 0) {
-			if (table[key] == item) {
+		while ((*table)[key] != 0) {
+			if ((*table)[key] == item) {
 				return true;
 			}
 			key = getHash(key + 1);
@@ -185,29 +194,39 @@ public:
 		std::cout << "Table contains: \n";
 		for (size_t i = 0; i < size; i++) {
 			
-			if (table[i] != 0) {
-				std::cout << i << ": " << table[i]  << "\n";
+			if ((*table)[i] != 0) {
+				std::cout << i << ": " << (*table)[i]  << "\n";
 			}
 		}
 		std::cout << "free : " << free << ", size: " << size << ".\n";
 	}
 
+	void printName () {
+		std::cout << name << ALPHA << "%" << ": ";
+	}
+
 private:
 	void rehash() {
-		free = size;
 		size *= 2;
+		free = size_t(size*ALPHA/100);
 
-		T * tmpTable = table;
+		T * oldTable = *table;
 
-		table = new T[size];
+		T * newTable = new T[size];
+
+		for (size_t i = 0; i < size; ++i ) {
+			newTable[i] = 0;
+		}
+
+		table = &newTable;
 
 		for (size_t i = 0; i < size/2; i++) {
-			if (tmpTable[i] != 0) {
-				insert( tmpTable[i] );
+			if (oldTable[i] != 0) {
+				insert( oldTable[i] );
 			}
 		}
 
-		delete[] tmpTable;
+		delete[] oldTable;
 
 	}
 
@@ -246,6 +265,10 @@ public:
 		}
 		std::cout << "\n";
 	}
+
+	void printName () {
+		std::cout << name << ": ";
+	}
 };
 
 /**
@@ -261,7 +284,7 @@ public:
 	std::string name = "unordered_set";
 
 	void insert( T & item ) {
-		table.insert(item);
+		table.insert( T(item) );
 	}
 
 	bool find( const T & item ) {
@@ -281,41 +304,50 @@ public:
 		std::cout << "\n";
 	}
 
+	void printName () {
+		std::cout << name << ": ";
+	}
+
 };
 
-template <typename T>
+template <typename T, typename INPUT_TYPE>
 void manualTest () {
 
 	T table;
 
 	std::string cmd;
-	int number;
+	INPUT_TYPE number;
 
 	while (true) {
 
+		std::cout << ">> ";
+
 		std::cin >> cmd;
 
-		if (cmd == "insert") {
+		if (cmd == "insert" || cmd == "i") {
 			std::cin >> number;
 			table.insert(number);
+			table.print();
 		}
 
-		else if ( cmd == "find") {
+		else if ( cmd == "find" || cmd == "f") {
 			std::cin >> number;
 			if (table.find(number))
-				std::cout << number << " is in the table.\n";
+				std::cout << number << " is in table.\n";
 			else
 				std::cout << number << " is not there.\n";
 		}
 
-		else if (cmd == "exit" ) {
+		else if ( cmd == "print" || cmd == "p") {
+			table.print();
+		}
+
+		else if (cmd == "exit" || cmd == "e") {
 			break;
 		}
 		else {
-			std::cout << "Wrong argument. \n Type insert | find | exit \n";
+			std::cout << "Wrong argument. Type insert | find | print | exit \n";
 		}
-		
-		table.print();
 	}
 }
 
@@ -323,6 +355,8 @@ template <typename T, typename I>
 void automaticTest () {
 
 	T table;
+
+	table.printName();
 
 	srand ( time(NULL) );
 
@@ -336,7 +370,8 @@ void automaticTest () {
 	}
 	t = clock() - t;
 
-	std::cout << table.name << ": " << float(t)/CLOCKS_PER_SEC << " s \n";
+
+	std::cout << float(t)/CLOCKS_PER_SEC << " s \n";
 
 }
 
@@ -351,14 +386,17 @@ void benchmark () {
 	automaticTest < HashTableS<TESTED_TYPE> , TESTED_TYPE > ();
 	automaticTest < HashTableUS<TESTED_TYPE> , TESTED_TYPE > ();
 	automaticTest < HashTableLL<TESTED_TYPE> , TESTED_TYPE > ();
-	automaticTest < HashTableLPR<TESTED_TYPE> , TESTED_TYPE > ();
+	automaticTest < HashTableLPR<TESTED_TYPE, 40> , TESTED_TYPE > ();
+
+
 
 }
 
 int main () {
 
 	benchmark();
-	//manualTest < HashTableLPR<TESTED_TYPE> >();
+	//manualTest < HashTableLPR<TESTED_TYPE, 70> , TESTED_TYPE>();
+	//manualTest < HashTableLPR<TESTED_TYPE, 40> , TESTED_TYPE>();
 
 	return 0;
 }
