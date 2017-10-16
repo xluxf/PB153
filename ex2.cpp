@@ -34,3 +34,88 @@ class StackVector {
 	}
 
 };
+
+/* ./bench test:insert | gnuplot > soubor.pdf */
+
+struct stack : benchmark::Group
+{
+    SelfTest()
+    {
+        x.type = Axis::Quantitative;
+        x.name = "outer";
+        x.unit = "iter";
+        x.normalize = Axis::Div;
+
+        y.type = Axis::Quantitative;
+        y.name = "inner";
+        y.unit = "k-iter";
+        y.min =      800000;
+        y.max =     1600000;
+        y.unit_div =   1000;
+        y.log = true;
+        y.step = 2;
+    }
+
+    virtual ~SelfTest() {}
+
+    std::string describe() { return "category:selftest"; }
+
+/**
+    BENCHMARK(delay)
+    {
+        for ( int i = 0; i < p; ++i )
+            for ( int j = 0; j < q; ++j );
+    }
+*/
+
+//hw2a
+//hw2b
+
+    BENCHMARK(insert) {
+        switch ( q ) {
+            case 1:
+        }
+    }
+};
+
+struct BFS : benchmark::Group
+{
+    BFS()
+    {
+        x.type = Axis::Quantitative;
+        x.name = "outer";
+        x.unit = "iter";
+        x.normalize = Axis::Div;
+
+        y.type = Axis::Quantitative;
+        y.name = "inner";
+        y.unit = "k-iter";
+        y.min =      800000;
+        y.max =     1600000;
+        y.unit_div =   1000;
+        y.log = true;
+        y.step = 2;
+    }
+
+    virtual ~SelfTest() {}
+
+    std::string describe() { return "category:selftest"; }
+
+/**
+    BENCHMARK(delay)
+    {
+        for ( int i = 0; i < p; ++i )
+            for ( int j = 0; j < q; ++j );
+    }
+*/
+
+//hw2a
+//hw2b
+
+    BENCHMARK(insert) {
+        switch ( q ) {
+            case 1:
+        }
+    }
+};
+

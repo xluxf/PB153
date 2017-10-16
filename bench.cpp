@@ -17,7 +17,7 @@ struct Stack : benchmark::Group
         x.type = benchmark::Axis::Quantitative;
         x.name = "items";
         x.min = 1000;
-        x.max = 10000;
+        x.max = 5000;
         x.step = 1000;
 
         y.type = benchmark::Axis::Qualitative;
@@ -50,7 +50,7 @@ struct Stack : benchmark::Group
     template< template< typename, typename > class C >
     void do_insert()
     {
-        using container = C< int, std::allocator< int > >;
+        //using container = C< int, std::allocator< int > >;
         std::stack< int, container > stack;
         for ( int i = 0; i < p; ++i )
             if ( i % 3 == 0 && !stack.empty() )

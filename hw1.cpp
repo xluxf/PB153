@@ -135,11 +135,16 @@ public:
 
 	std::string name = "linear probing, rehashing, alpha=";
 
-	T ** table;
+	std::vector<T> * table;
 	size_t size;
 	size_t free;
 
 	HashTableLPR() {
+
+
+		for (size_t i = 0; i < INIT_SIZE; ++i) {
+			tmpTable.insert(NULL);
+		}
 
 		T * tmpTable = new T[INIT_SIZE];
 		for (size_t i = 0; i < INIT_SIZE; ++i) {
