@@ -17,3 +17,5 @@ hw4
 hw5
 test1.pdf
 result.pdf
+*.pdf
+test*
