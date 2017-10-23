@@ -1,9 +1,9 @@
 CXX=g++-7
 CXXFLAGS=-std=c++14 -Wall -O2 -g -Ibricks
 LDFLAGS=
-SOURCES=ex1.cpp hw1.cpp ex2.cpp ex3.cpp bench.cpp test.cpp
+SOURCES=ex1.cpp hw1.cpp ex2.cpp ex3.cpp bench.cpp test.cpp bfs.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=ex1 hw1 ex2 ex3 bench test
+EXECUTABLE=ex1 hw1 ex2 ex3 bench test bfs
 
 
 ex1:ex1.cpp
@@ -23,3 +23,8 @@ bench:bench.cpp
 
 test:test.cpp
 	$(CXX) $(CXXFLAGS) -o test test.cpp
+
+bfs:bfs.cpp
+	$(CXX) $(CXXFLAGS) -o bfs bfs.cpp
+
+
