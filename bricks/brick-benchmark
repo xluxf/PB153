@@ -119,7 +119,7 @@ Sample bootstrap( Sample s, E estimator, int iterations = 20000 )
 struct Axis
 {
     bool log; /* if true, step is multiplicative, in percent */
-    enum { Quantitative, Qualitative, Disabled } type;
+    enum { Quantitative, Qualitative, Benchmarks, Disabled } type;
     enum { Mult, Div, None } normalize; /* scale time per unit on this axis? */
     int64_t min, max;
     double step; // useful for log-scaled benchmarks
@@ -129,7 +129,7 @@ struct Axis
     std::function<std::string(int64_t)> _render;
 
     Axis() : log( false ), type( Disabled ), normalize( None ),
-             min( 1 ), max( 10 ), step( 1 ),
+             min( 1 ), max( 1 ), step( 1 ),
              unit_mul( 1 ), unit_div( 1 ),
              name( "n" ), unit( "unit" )
     {
@@ -209,6 +209,8 @@ struct Group
     virtual ~Group() {}
     virtual int64_t parameter( Axis a, int seq )
     {
+        if ( a.type == Axis::Benchmarks )
+            return seq;
         if ( !a.log )
             return a.min + seq * a.step;
         for ( int i = 0; i < seq; ++i )
@@ -428,6 +430,8 @@ int run( int argc, const char **argv )
     Filter flt( argc, argv );
 
     gnuplot::Plots plots;
+    gnuplot::Plot *plot_ = nullptr;
+    BenchmarkBase *last_ = nullptr;
     ResultLog log;
     ResultLog::Key key;
 
@@ -440,18 +444,27 @@ int run( int argc, const char **argv )
         if ( !tc )
             continue;
 
-        key.benchmark = tc->describe_long();
+        bool changed = false;
+        if ( last_ && typeid( tc ) != typeid( last_ ) )
+            changed = true;
+        last_ = tc;
 
-        gnuplot::Plot &plot = plots.append();
+        key.benchmark = tc->describe_long();
 
         std::cerr << tc->describe() << std::endl;
         auto axes = tc->axes();
         Axis x = axes.first, y = axes.second;
-        bool box = x.type == Axis::Disabled && y.type == Axis::Qualitative;
+        bool box = x.type == Axis::Disabled && ( y.type == Axis::Qualitative || y.type == Axis::Benchmarks );
+
+        if ( y.type != Axis::Benchmarks || !plot_ || changed )
+            plot_ = &plots.append();
+
+        gnuplot::Plot &plot = *plot_;
 
         for ( int q_seq = 0; q_seq < y.count(); ++ q_seq ) {
             int64_t q_val = tc->parameter( y, q_seq );
-            auto &ds = plot.append( y.render( q_val ), y.type == Axis::Qualitative ? 0 : q_val,
+            auto y_label = y.type == Axis::Benchmarks ? tc->name : y.render( q_val );
+            auto &ds = plot.append( y_label, y.type == Axis::Quantitative ? q_val : 0,
                                     4, box ? gnuplot::DataSet::Box : gnuplot::DataSet::RibbonLP );
             for ( int p_seq = 0; p_seq < x.count(); ++ p_seq ) {
                 key.p = tc->p = tc->parameter( x, p_seq );
@@ -504,9 +517,13 @@ int run( int argc, const char **argv )
             plot.axis     ( gnuplot::Plot::Z, y.name, y.unit );
         }
 
+        if ( y.type == Axis::Benchmarks )
+            plot.axis     ( gnuplot::Plot::Z, "benchmark", "" );
+
         plot.name     ( tc->describe_long() );
         switch ( y.type ) {
-            case Axis::Qualitative: plot.style( gnuplot::Style::Spot ); break;
+            case Axis::Qualitative:
+            case Axis::Benchmarks: plot.style( gnuplot::Style::Spot ); break;
             case Axis::Quantitative: plot.style( gnuplot::Style::Gradient ); break;
             default: ;
         }
@@ -610,9 +627,6 @@ namespace t_benchmark {
 
 using namespace ::brick::benchmark;
 
-
-/* ./bench test:insert | gnuplot > soubor.pdf */
-
 struct SelfTest : benchmark::Group
 {
     SelfTest()
@@ -636,20 +650,11 @@ struct SelfTest : benchmark::Group
 
     std::string describe() { return "category:selftest"; }
 
-/**
     BENCHMARK(delay)
     {
         for ( int i = 0; i < p; ++i )
             for ( int j = 0; j < q; ++j );
     }
-*/
-/**
-    BENCHMARK(insert) {
-        switch ( q ) {
-            case 1:
-        }
-    }
-    */
 };
 
 }

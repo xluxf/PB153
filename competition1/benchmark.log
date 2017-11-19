@@ -1,8 +1,0 @@
-category:charset type:fl test:insert
-: 1 0 1 2.32234e-07 2.18517e-07 2.4639e-07
-category:charset type:fl test:intersect
-: 1 0 1 2.1092e-07 1.9753e-07 2.24713e-07
-category:charset type:fl test:union_
-: 1 0 1 2.12618e-07 1.99253e-07 2.2629e-07
-category:charset type:fl test:sum
-: 1 0 1 2.20429e-07 2.07203e-07 2.34067e-07

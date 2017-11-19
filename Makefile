@@ -27,4 +27,12 @@ test:test.cpp
 bfs:bfs.cpp
 	$(CXX) $(CXXFLAGS) -o bfs bfs.cpp
 
+hw4_check: hw4_check.cpp hw4.cpp
+	$(CXX) $(CXXFLAGS) -o hw4_check hw4_check.cpp
+	./hw4_check
 
+hw4: hw4.cpp hw4.hpp
+	$(CXX) $(CXXFLAGS) -O2 -o hw4 hw4.cpp
+	rm -f benchmark.log
+	./hw4 category:charset > bench.gp
+	gnuplot < bench.gp > hw4_bench.pdf

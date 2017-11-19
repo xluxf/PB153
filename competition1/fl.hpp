@@ -29,10 +29,7 @@ struct fl
 
     	fl res;
     	for (int i = 0; i < 256; i++) {
-    		if (this->table[i] && o.table[i])
-    			res.table[i] = true;
-    		else 
-    			res.table[i] = false;
+    		res.table[i] = this->table[i] && o.table[i];
     	}
     	return res;
     }
@@ -41,10 +38,7 @@ struct fl
 
     	fl res;
     	for (int i = 0; i < 256; i++) {
-    		if (this->table[i] || o.table[i])
-    			res.table[i] = true;
-    		else 
-    			res.table[i] = false;
+    		res.table[i] = this->table[i] || o.table[i];
     	}
     	return res;
 
