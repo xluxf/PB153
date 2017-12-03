@@ -24,7 +24,7 @@ struct MatrixMull : benchmark::Group
         x.type = benchmark::Axis::Quantitative;
         x.name = "items";
         x.min = 100;
-        x.max = 600;
+        x.max = 500;
         x.step = 100;
 
         y.type = benchmark::Axis::Qualitative;
