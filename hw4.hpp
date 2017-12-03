@@ -105,10 +105,6 @@ struct NibbletrieSetUint16
 
         NibbletrieSetUint16 res;
 
-        // projit vsechny vrstvy
-        // pokud v alespon jedne existuje Node, vytvorit jej
-        // pokud existuje jen v jedne, zkopirovat ho
-
         return res;
 
     }
